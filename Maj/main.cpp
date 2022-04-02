@@ -63,10 +63,10 @@ struct Tile {
 			return type > t.type;
 		}
 	}
-	bool operator == (const Tile& t) {
+	bool operator == (const Tile& t)const {
 		return (rank == t.rank) && (type == t.type);
 	}
-	bool operator != (const Tile& t) {
+	bool operator != (const Tile& t)const {
 		return (rank != t.rank) || (type != t.type);
 	}
 };
@@ -157,6 +157,26 @@ struct Game {
 		}
 		void getTile(Tile tile) {
 			hand.push_back(tile);
+		}
+		void playTile(Tile tile) {
+			for (int i = 0; i < size(); i++) {
+				if (hand[i].num == tile.num && hand[i].type == tile.type) {
+					if (i != size() - 1) {
+						hand.erase(hand.begin() + i);
+					}
+					else {
+						hand.pop_back();
+					}
+				}
+			}
+		}
+		void playTile(int i) {
+			if (i != size() - 1) {
+				hand.erase(hand.begin() + i);
+			}
+			else {
+				hand.pop_back();
+			}
 		}
 		void sortSmall() {
 			sort(hand.begin(), hand.end(), compareSmall);
@@ -256,6 +276,7 @@ struct Game {
 			S = 13 - oneNines.size();
 			return S;
 		}
+		// https://zhuanlan.zhihu.com/p/31000381
 		int stepTo() {
 			sortSmall();
 			int S = 8;
@@ -366,13 +387,22 @@ struct Game {
 	Database database;
 	vector<Tile> doras;
 	int pos = 0;
+	int playerNum;
 
 	void init() {
 		database.init();
 		database.disorder();
 		doras.push_back(database.tiles[database.tiles.size() - 6]);
+		playerNum = rand() % 4;
 	}
-
+	void outDoras() {
+		cout << endl;
+		cout << "dora: ";
+		for (int i = 0; i < doras.size(); i++) {
+			doras[i].next().out();
+			cout << " ";
+		}
+	}
 	void deal() {
 		for (int t = 1; t <= 3; t++) {
 			for (int p = 0; p < 4; p++) {
@@ -390,37 +420,54 @@ struct Game {
 			players[p].sortSmall();
 		}
 	}
-
+	void playTile(int p) {
+		if (p == playerNum) {
+			cout << "Play: ";
+			int num;
+			char type;
+			cin >> num >> type;
+			Tile play(num, type);
+			players[p].playTile(play);
+		}
+		else {
+			//TODO AI Play
+		}
+	}
+	void info(int p) {
+		int stepToAll = players[p].stepToAll();
+		int doraNum = players[p].doraNum(doras[0]);
+		int maxTypeNum = players[p].maxTypeNum();
+		cout << endl;
+		cout << "stepToAll: " << stepToAll;
+		cout << endl;
+		cout << "doraNum: " << doraNum;
+		cout << endl;
+		cout << "maxTypeNum: " << maxTypeNum;
+		cout << endl;
+	}
 	void start() {
+		outDoras();
+		cout << endl;
+		cout << "playerNum: " << playerNum;
+		cout << endl;
+		cout << endl;
 		for (int p = 0; p < 4; p++) {
+			cout << p << " ";
+			players[p].out();
+			cout << " ";
+			database.tiles[pos].out();
+			cout << endl;
+
 			players[p].getTile(database.tiles[pos]);
 			players[p].sortSmall();
-			int stepToAll = players[p].stepToAll();
-			if (stepToAll == -1) {
-				int doraNum = players[p].doraNum(doras[0]);
-				int maxTypeNum = players[p].maxTypeNum();
-				cout << endl;
-				database.out();
-				cout << endl;
-				cout << "dora: ";
-				doras[0].next().out();
-				cout << endl;
+			playTile(p);
 
-				cout << p << " ";
-				players[p].out();
-				cout << endl;
-				cout << "tsumo: ";
-				database.tiles[pos].out();
-				cout << endl;
-				cout << "stepToAll: " << stepToAll;
-				cout << endl;
-				cout << "doraNum: " << doraNum;
-				cout << endl;
-				cout << "maxTypeNum: " << maxTypeNum;
-				cout << endl;
-				getchar();
-			}
+			cout << p << " ";
+			players[p].out();
+			cout << endl;
+			cout << endl;
 		}
+		cout << endl;
 	}
 };
 
@@ -429,12 +476,12 @@ void main() {
 	unsigned seed;
 	seed = time(0);
 	srand(seed);
-	while (true) {
+	while (count <= 0) {
+		printf("\rGame: %d", count);
 		Game game;
 		game.init();
 		game.deal();
 		game.start();
 		count++;
-		printf("\r%d", count);
 	}
 }
