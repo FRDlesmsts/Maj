@@ -152,6 +152,7 @@ struct Game {
 
 	struct Player {
 		vector<Tile> hand;
+		vector<Tile> river;
 		int size() {
 			return hand.size();
 		}
@@ -159,6 +160,7 @@ struct Game {
 			hand.push_back(tile);
 		}
 		void playTile(Tile tile) {
+			river.push_back(tile);
 			for (int i = 0; i < size(); i++) {
 				if (hand[i].num == tile.num && hand[i].type == tile.type) {
 					if (i != size() - 1) {
@@ -171,6 +173,7 @@ struct Game {
 			}
 		}
 		void playTile(int i) {
+			river.push_back(hand[i]);
 			if (i != size() - 1) {
 				hand.erase(hand.begin() + i);
 			}
@@ -188,6 +191,14 @@ struct Game {
 				}
 				else {
 					hand[i].out();
+				}
+			}
+		}
+		void outRiver() {
+			for (int i = 0; i < river.size(); i++) {
+				river[i].out();
+				if (i % 6 == 5) {
+					cout << " ";
 				}
 			}
 		}
@@ -386,14 +397,19 @@ struct Game {
 	Player players[4];
 	Database database;
 	vector<Tile> doras;
-	int pos = 0;
+	int pos;
 	int playerNum;
+	int tileEnd;
+	bool endGame;
 
 	void init() {
 		database.init();
 		database.disorder();
 		doras.push_back(database.tiles[database.tiles.size() - 6]);
+		pos = 0;
 		playerNum = rand() % 4;
+		tileEnd = database.tiles.size() - 6 - 14;
+		endGame = false;
 	}
 	void outDoras() {
 		cout << endl;
@@ -425,12 +441,19 @@ struct Game {
 			cout << "Play: ";
 			int num;
 			char type;
-			cin >> num >> type;
+			cin >> num;
+			cin >> type;
 			Tile play(num, type);
 			players[p].playTile(play);
 		}
 		else {
 			//TODO AI Play
+			players[p].hand;
+			int i = rand() % 14;
+			cout << "Play: ";
+			players[p].hand[i].out();
+			cout << endl;
+			players[p].playTile(i);
 		}
 	}
 	void info(int p) {
@@ -445,29 +468,89 @@ struct Game {
 		cout << "maxTypeNum: " << maxTypeNum;
 		cout << endl;
 	}
+	bool checkRon(vector<Tile> hand, Tile tile) {
+		hand.push_back(tile);
+		Player tempPlayer;
+		tempPlayer.hand.swap(hand);
+		int S = tempPlayer.stepToAll();
+		if (S == -1) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	bool checkRon(vector<Tile> hand) {
+		Player tempPlayer;
+		tempPlayer.hand.swap(hand);
+		int S = tempPlayer.stepToAll();
+		if (S == -1) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
 	void start() {
 		outDoras();
 		cout << endl;
 		cout << "playerNum: " << playerNum;
 		cout << endl;
 		cout << endl;
-		for (int p = 0; p < 4; p++) {
-			cout << p << " ";
-			players[p].out();
-			cout << " ";
-			database.tiles[pos].out();
-			cout << endl;
+		while (!endGame) {
+			for (int p = 0; p < 4; p++) {
+				if (pos >= tileEnd) {
+					endGame = true;
+					break;
+				}
+				cout << p << " ";
+				if (playerNum == p) {
+					players[p].out();
+					cout << " ";
+					database.tiles[pos].out();
+				}
+				cout << endl;
 
-			players[p].getTile(database.tiles[pos]);
-			players[p].sortSmall();
-			playTile(p);
+				if (checkRon(players[p].hand, database.tiles[pos])) {
+					cout << "Tsumo!" << endl;
+					cout << p << " ";
+					players[p].out();
+					cout << " ";
+					database.tiles[pos].out();
+					cout << endl;
+					endGame = true;
+					break;
+				}
+				players[p].getTile(database.tiles[pos]);
+				pos++;
+				players[p].sortSmall();
+				playTile(p);
+				players[p].outRiver();
+				cout << endl;
 
-			cout << p << " ";
-			players[p].out();
-			cout << endl;
+				if (playerNum == p) {
+					cout << p << " ";
+					players[p].out();
+					cout << endl;
+				}
+				cout << endl;
+
+				Tile play = players[p].river[players[p].river.size() - 1];
+				for (int l = 0; l < 4; l++) {
+					if (checkRon(players[l].hand, play)) {
+						cout << "Ron!" << endl;
+						cout << l << "->" << p << " ";
+						players[p].out();
+						cout << " ";
+						play.out();
+						cout << endl;
+						endGame = true;
+						break;
+					}
+				}
+			}
 			cout << endl;
 		}
-		cout << endl;
 	}
 };
 
