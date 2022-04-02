@@ -15,7 +15,7 @@ using std::endl;
 using std::sort;
 using std::min;
 using std::max;
-#define DEBUG true
+#define DEBUG false
 
 int countAll = 0;
 float allStepTo = 0;
@@ -503,7 +503,7 @@ struct Game {
 		cout << endl;
 		cout << endl;
 		while (!endGame) {
-			for (int p = 0; p < 4; p++) {
+			for (int p = 0; p < 4 && !endGame; p++) {
 				if (pos >= tileEnd) {
 					endGame = true;
 					break;
@@ -544,8 +544,8 @@ struct Game {
 				for (int l = 0; l < 4; l++) {
 					if (checkRon(players[l].hand, play)) {
 						cout << "Ron!" << endl;
-						cout << l << "->" << p << " ";
-						players[p].out();
+						cout << p << "->" << l << " ";
+						players[l].out();
 						cout << " ";
 						play.out();
 						cout << endl;
