@@ -15,6 +15,7 @@ using std::endl;
 using std::sort;
 using std::min;
 using std::max;
+#define DEBUG true
 
 int countAll = 0;
 float allStepTo = 0;
@@ -81,10 +82,10 @@ bool compareLarge(Tile t1, Tile t2) {
 
 int distance(Tile t1, Tile t2) {
 	if (t1.type == t2.type && t1.type != 'z' && t2.type != 'z') {
-		if (abs(t1.num - t2.num) == 1) {
+		if (abs(t1.rank - t2.rank) == 1) {
 			return 1;
 		}
-		if (abs(t1.num - t2.num) == 2) {
+		if (abs(t1.rank - t2.rank) == 2) {
 			return 2;
 		}
 	}
@@ -159,10 +160,12 @@ struct Game {
 		void getTile(Tile tile) {
 			hand.push_back(tile);
 		}
-		void playTile(Tile tile) {
+		bool playTile(Tile tile) {
+			bool in = false;
 			river.push_back(tile);
 			for (int i = 0; i < size(); i++) {
 				if (hand[i].num == tile.num && hand[i].type == tile.type) {
+					in = true;
 					if (i != size() - 1) {
 						hand.erase(hand.begin() + i);
 					}
@@ -171,6 +174,8 @@ struct Game {
 					}
 				}
 			}
+			//TODO not in
+			return in;
 		}
 		void playTile(int i) {
 			river.push_back(hand[i]);
@@ -437,7 +442,7 @@ struct Game {
 		}
 	}
 	void playTile(int p) {
-		if (p == playerNum) {
+		if (p == playerNum || DEBUG) {
 			cout << "Play: ";
 			int num;
 			char type;
@@ -447,7 +452,7 @@ struct Game {
 			players[p].playTile(play);
 		}
 		else {
-			//TODO AI Play
+			//TODO ai play
 			players[p].hand;
 			int i = rand() % 14;
 			cout << "Play: ";
@@ -504,7 +509,7 @@ struct Game {
 					break;
 				}
 				cout << p << " ";
-				if (playerNum == p) {
+				if (playerNum == p || DEBUG) {
 					players[p].out();
 					cout << " ";
 					database.tiles[pos].out();
@@ -528,7 +533,7 @@ struct Game {
 				players[p].outRiver();
 				cout << endl;
 
-				if (playerNum == p) {
+				if (playerNum == p || DEBUG) {
 					cout << p << " ";
 					players[p].out();
 					cout << endl;
