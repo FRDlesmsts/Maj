@@ -16,6 +16,7 @@ using std::sort;
 using std::min;
 using std::max;
 #define DEBUG false
+#define SHOW true
 
 int countAll = 0;
 float allStepTo = 0;
@@ -92,9 +93,17 @@ int distance(Tile t1, Tile t2) {
 	return -1;
 }
 
+int distanceAll(Tile t1, Tile t2) {
+	if (t1.type == t2.type && t1.type != 'z' && t2.type != 'z') {
+		return abs(t1.rank - t2.rank);
+	}
+	return -1;
+}
+
 struct Game {
 	struct Database {
 		vector<Tile> tiles;
+		vector<Tile> origin;
 		int size;
 		void init() {
 			for (int i = 1; i <= 4; i++) {
@@ -125,6 +134,14 @@ struct Game {
 				}
 			}
 			size = tiles.size();
+			for (int i = 1; i <= 9; i++) {
+				origin.push_back(Tile(i, 'm'));
+				origin.push_back(Tile(i, 'p'));
+				origin.push_back(Tile(i, 's'));
+			}
+			for (int i = 1; i <= 7; i++) {
+				origin.push_back(Tile(i, 'z'));
+			}
 		}
 		void out() {
 			for (int i = 0; i < tiles.size(); i++) {
@@ -453,12 +470,58 @@ struct Game {
 		}
 		else {
 			//TODO ai play
-			players[p].hand;
-			int i = rand() % 14;
+			//Evaluate tile point each
+			int playH = 0;
+			//int P = players[p].stepToAll();
+			//int count = 0;
+			//int maxCount = 0;
+			//for (int h = 0; h < players[p].size(); h++) {
+			//	count = 0;
+			//	for (int i = 0; i < database.origin.size(); i++) {
+			//		Player tempPlayer;
+			//		for (int j = 0; j < players[p].size(); j++) {
+			//			if (j != h) {
+			//				tempPlayer.hand.push_back(players[p].hand[j]);
+			//			}
+			//		}
+			//		tempPlayer.hand.push_back(database.origin[i]);
+			//		if (tempPlayer.stepToAll() < P) {
+			//			count++;
+			//		}
+			//	}
+			//	if (count >= maxCount) {
+			//		playH = h;
+			//		maxCount = count;
+			//	}
+			//}
+			//int D = 114;
+			//int maxminDist = 0;
+			//for (int h = 0; h < players[p].size(); h++) {
+			//	int minDist = 114514;
+			//	for (int j = 0; j < players[p].size(); j++) {
+			//		if (h != j) {
+			//			int distJ = distanceAll(players[p].hand[h], players[p].hand[j]);
+			//			if (distJ >= 2 || distJ == -1) {
+			//				if (distJ < minDist) {
+			//					minDist = distJ;
+			//				}
+			//			}
+			//		}
+			//	}
+			//	if (minDist != 114514) {
+			//		if (minDist > maxminDist) {
+			//			maxminDist = minDist;
+			//			playH = h;
+			//		}
+			//	}
+			//	else {
+			//
+			//	}
+			//}
 			cout << "Play: ";
-			players[p].hand[i].out();
+			players[p].hand[playH].out();
 			cout << endl;
-			players[p].playTile(i);
+			players[p].playTile(playH);
 		}
 	}
 	void info(int p) {
@@ -476,7 +539,7 @@ struct Game {
 	bool checkRon(vector<Tile> hand, Tile tile) {
 		hand.push_back(tile);
 		Player tempPlayer;
-		tempPlayer.hand.swap(hand);
+		tempPlayer.hand.assign(hand.begin(), hand.end());
 		int S = tempPlayer.stepToAll();
 		if (S == -1) {
 			return true;
@@ -487,7 +550,7 @@ struct Game {
 	}
 	bool checkRon(vector<Tile> hand) {
 		Player tempPlayer;
-		tempPlayer.hand.swap(hand);
+		tempPlayer.hand.assign(hand.begin(), hand.end());
 		int S = tempPlayer.stepToAll();
 		if (S == -1) {
 			return true;
@@ -509,7 +572,7 @@ struct Game {
 					break;
 				}
 				cout << p << " ";
-				if (playerNum == p || DEBUG) {
+				if (playerNum == p || DEBUG || SHOW) {
 					players[p].out();
 					cout << " ";
 					database.tiles[pos].out();
@@ -533,7 +596,7 @@ struct Game {
 				players[p].outRiver();
 				cout << endl;
 
-				if (playerNum == p || DEBUG) {
+				if (playerNum == p || DEBUG || SHOW) {
 					cout << p << " ";
 					players[p].out();
 					cout << endl;
